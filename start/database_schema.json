@@ -1,0 +1,35 @@
+{
+    "admain": [
+        "id",
+        "name",
+        "email",
+        "password"
+    ],
+    "user": [
+        "id",
+        "name",
+        "email",
+        "password",
+        "ordered"
+    ],
+    "products": [
+        "id",
+        "name",
+        "description",
+        "colors",
+        "colors-order-guide",
+        "most-ordered-color",
+        "price",
+        "images",
+        "ordered"
+    ],
+    "order": [
+        "id",
+        "phone-num",
+        "userId [foreign key]",
+        "productId [foreign key]",
+        "color",
+        "price",
+        "delivered"
+    ]
+}

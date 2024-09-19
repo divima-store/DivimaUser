@@ -1,0 +1,26 @@
+{
+    "Content": {
+        "Home": "/",
+        "Product": "/product/[productId]",
+        "Order": "/order/[productId]",
+        "Search": "/search?description=[...]"
+    },
+    "User": {
+        "Sign in": "/signin",
+        "Sign up": "/signup",
+        "Account": "/account",
+        "Profile": "/account/profile",
+        "Oredres": "/account/orders",
+        "Log Out": "/logout"
+    },
+    "Admin dashboard": {
+        "Users": "/dashboard/users",
+        "User": "/dashboard/user/[userId]",
+        "Orders": "/dashboard/orders",
+        "Order": "/dashboard/order/[orderId]",
+        "Products": "/dashboard/products",
+        "Product": "/dashboard/product/[productId]",
+        "Create new admin": "/dashboard/new-admin",
+        "Create new admin - virify email": "/dashboard/new-admin/email-verification"
+    }
+}
