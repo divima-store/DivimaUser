@@ -1,6 +1,17 @@
 import { supabase } from "./supabase";
 import { shuffle } from 'lodash';
 
+export const createUserId = async function (email) { 
+  const randomNum = Math.floor(100000 + Math.random() * 900000); // 6-digit random number
+
+  // Create a hash from the email string and convert it to a numerical value
+  const emailHash = [...email].reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  // Combine the random number with part of the email hash to ensure it's 12 digits
+  const userId = parseInt(`${randomNum}${emailHash % 1000000}`); // 6 random digits + 6 hash digits = 12 digits
+  return userId;
+};
+
 export const getProducts = async function () {
   const { data, error } = await supabase.from("products").select("*");
 
@@ -28,15 +39,26 @@ export const getProduct = async function (productId) {
   return data;
 };
 
-export const getusers = async function () {
-  const { data, error } = await supabase.from("users").select("*");
+export const getUser = async function (email) {
+  const { data, error } = await supabase.from("users").select().eq("email", email).single();
   // console.log(data);
   if (error) {
-    console.error("Error fetching users:", error);
-    return [];
+    console.error("Error fetching user:", error);
+    return null;
   }
   return data;
 };
+export const CreateUser = async function (email) {
+  const id = await createUserId(email)
+  const { data, error } = await supabase.from("users").insert({ id, email }).select().single();
+  // console.log(data);
+  if (error) {
+    console.error("Error creating user:", error);
+    return null;
+  }
+  return data;
+};
+
 
 export const getOrderById = async function (orderId) {
   // Query to select the order with the specific ID
@@ -64,51 +86,89 @@ export const getOrderById = async function (orderId) {
   }
 
   // Format the data to include product details directly in the order object
-  const formattedOrder = {
-    ...data,
-    productName: data.product?.name,
-    productPrice: data.product?.price,
-    productImageUrl: data.product?.imageUrl,
-  };
+
 
   // console.log("Formatted Order:", formattedOrder); // For debugging
 
-  return formattedOrder;
+  return data;
+};
+
+export const getUserById = async (userId) => {
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single(); // Fetch a single user by ID
+
+    if (error) {
+      console.error("Error fetching user by ID:", error);
+      return null; // Return null or handle error appropriately
+    }
+
+    return data; // Return the user data
+  } catch (err) {
+    console.error("Unexpected error:", err);
+    throw new Error("Failed to fetch user by ID");
+  }
 };
 
 
-
 export const CreateOrder = async function (order) {
-  // console.log(order);
-  
-  const { data, error } = await supabase.from("orders").insert(order).select()
-  if (error) {
-    throw error
-  }
-  // else {
-  //   console.log(data);
-  // }
-}
+  try {
+    // Insert the new order
+    const { data, error } = await supabase.from("orders").insert(order).select().single();
 
-async function getOrders(email) {
-  const { data: orderIds, error: orderIdsError } = await supabase
+    if (error) {
+      throw error; // Handle the error as needed
+    }
+
+    // Get the user details to update
+    const user = await getUserById(order.userId); // Assuming order has userId
+
+    if (user) {
+      // Update the user to add the new order ID to the orders array
+      const updatedOrders = [...(user.orders || []), data.id]; // Add the new order ID
+
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({ orders: updatedOrders }) // Update orders column
+        .eq('id', user.id); // Match the user by ID
+
+      if (updateError) {
+        throw updateError; // Handle update error
+      }
+    } else {
+      console.error("User not found.");
+    }
+
+    return data; // Return the newly created order data
+  } catch (err) {
+    console.error("Error creating order:", err);
+    throw new Error("Failed to create order");
+  }
+};
+
+export const getOrders = async function (id) {
+  const { data: userData, error: orderIdsError } = await supabase
     .from('users')
     .select('orders')
-    .eq('email', email)
+    .eq('id', id)
+    .single()
 
   if (orderIdsError) {
     console.error('Error fetching order IDs:', orderIdsError)
-    return
+    return []
   }
 
-  // const { data: orders, error: ordersError } = await supabase
-  //   .from('orders')
-  //   .select('*')
-  //   .in('id', orderIds.map(order => order.order_id))
+  if (!userData || !userData.orders) {
+    return []
+  }
 
-  // if (ordersError) {
-  //   console.error('Error fetching orders:', ordersError)
-  //   return
-  // }
+  const orderPromises = userData.orders.map(orderId => getOrderById(orderId))
+  const orders = await Promise.all(orderPromises)
+
+  return orders
 }
+
 

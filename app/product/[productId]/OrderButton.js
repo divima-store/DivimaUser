@@ -5,7 +5,7 @@ import OrderForm from "@/app/product/[productId]/OrderForm"
 import { FaCheckCircle } from "react-icons/fa"
 
 
-export default function OrderButton({ product }) {
+export default function OrderButton({ product, userId }) {
 
     const [showOrderForm, setShowOrderForm] = useState(false)
     const [success, setSuccess] = useState(false)
@@ -35,6 +35,7 @@ export default function OrderButton({ product }) {
                         product={product}
                         onClose={handleShowForm}
                         onSuccess={handleSuccess}
+                        userId={userId}
                     />
                 )
             }

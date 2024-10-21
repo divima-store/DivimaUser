@@ -2,7 +2,19 @@
 import Image from 'next/image'
 import Link from 'next/link';
 import { getServerSession } from "next-auth/next";
-import { options } from "../api/auth/[...nextauth]/route";
+import options from "../_lib/auth";
+
+export async function generateMetadata() {
+    const session = await getServerSession(options);
+
+    // Check if the session exists and has user data
+    if (session && session.user) {
+        // Return the first name or a fallback value
+        return { title: session.user.name.split(' ')[0] || 'User'};
+    }
+
+    // Fallback if no session is available
+}
 
 export default async function AccountPage() {
     const session = await getServerSession(options)

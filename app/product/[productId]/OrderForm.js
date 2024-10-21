@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import { CreateOrder } from '../../_lib/data-services';
 
-export default function OrderForm({ product, onClose, onSuccess }) {
+export default function OrderForm({ product, onClose, onSuccess, userId }) {
     const [phoneNum, setPhoneNumber] = useState('');
     const [location, setLocation] = useState('');
+    console.log(userId)
 
     const [error, setError] = useState(null); // To store error message
 
@@ -18,7 +19,7 @@ export default function OrderForm({ product, onClose, onSuccess }) {
                 productId: product.id,
                 phoneNum,
                 location,
-                userId: 1
+                userId
             });
             onSuccess();
             onClose();

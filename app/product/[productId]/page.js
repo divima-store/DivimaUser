@@ -4,6 +4,10 @@ import { getProducts, getProduct } from "@/app/_lib/data-services"
 import CardsContainer from '@/app/_components/CardsContainer'
 import OrderButton from '@/app/product/[productId]/OrderButton'
 import { notFound } from 'next/navigation'
+import options from '@/app/_lib/auth'
+import { getServerSession } from 'next-auth'
+
+
 
 export async function generateStaticParams() {
     const prods = await getProducts()
@@ -23,6 +27,11 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function ViewProduct({ params }) {
+    const session = await getServerSession(options)
+    // console.log(session.user.id);
+    const loggedIn = !!session
+
+    
     const id = params.productId
 
     const product = await getProduct(id)
@@ -53,7 +62,12 @@ export default async function ViewProduct({ params }) {
                             <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
                             <p className="text-gray-600 mb-4">{product.description}</p>
                             <p className="text-2xl font-bold text-gray-800 mb-6">{product.price.toFixed(2)} EG</p>
-                            <OrderButton product={product} />
+                            {loggedIn ? (
+                                <OrderButton product={product} userId={session.user.id} />
+                            ) : (
+                                <p className='text-lg'>Please <Link className='text-green-500 border-b border-transparent transition hover:border-green-500 pb-0.5' href="/api/auth/signin">Sign In</Link> to place an order.</p>
+                            )}
+
                         </div>
                     </div>
                 </div>
